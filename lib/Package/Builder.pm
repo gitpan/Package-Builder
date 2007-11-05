@@ -16,7 +16,7 @@ use File::Find;
 use File::Basename;
 use File::Spec;
 
-use Package::Util;
+use Package::Utils;
 =head1 NAME
 
 Package::Builder - The great new Package::Builder!
@@ -27,7 +27,7 @@ Version 5.01
 
 =cut
 
-our $VERSION = '5.01';
+our $VERSION = '5.02';
 
 
 =head1 SYNOPSIS

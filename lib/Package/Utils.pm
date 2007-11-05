@@ -1,4 +1,4 @@
-package Package::Util;
+package Package::Utils;
 require      Exporter;
 our @ISA       = qw(Exporter);
 our @EXPORT    = qw(escapeSpecialChars getScriptFileContent getFileContents getUserMap getUserId getGroupMap getGroupId getUniqElement getInputFileLine trim);    # Symbols to be exported by default

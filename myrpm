@@ -25,13 +25,13 @@ use File::Basename;
 use File::Spec;
 use Cwd;
 
-use Package::Util;
+use Package::Utils;
 use Package::Builder;
 
 sub printUsage($);
 sub printError($);
 
-my $version_number = "4.42";
+my $version_number = "5.02";
 printError("Wrong parameter : -N, -V ,-R at least\n$0 -h for help")
   unless ( $#ARGV >= 0 );
 

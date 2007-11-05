@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Package-Builder
-version:             5.01
+version:             5.02
 abstract:            The great new Package::Builder!
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36
