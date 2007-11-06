@@ -2,7 +2,7 @@ package Package::Builder;
 require      Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(isReservedDir isDocFile isConfigFile substituteAliasDir getChangeLogs checkVersionFormat checkReleaseFormat getParameterFromConfig getSpecTemplate);    # Symbols to be exported by default
+our @EXPORT    = qw(extractArchive isReservedDir isDocFile isConfigFile substituteAliasDir getChangeLogs checkVersionFormat checkReleaseFormat getParameterFromConfig getSpecTemplate);    # Symbols to be exported by default
 use warnings;
 use strict;
 
@@ -27,7 +27,7 @@ Version 5.01
 
 =cut
 
-our $VERSION = '5.02';
+our $VERSION = '5.03';
 
 
 =head1 SYNOPSIS
@@ -86,6 +86,45 @@ our $archiveRootPath = "/tmp/myrpm";
 
 =head1 FUNCTIONS
 
+=head2 extractArchive
+
+=cut
+sub extractArchive {
+	my $archive = shift;
+	my $root_dir = shift;
+	my $uid = shift;
+	my $gid = shift;
+
+    # Create temporary dir
+    my $snap_dir = "$archiveRootPath/$$";
+    my $tmp_dir  = "$snap_dir/$root_dir";
+    eval { mkpath($tmp_dir) };
+    if ($@) {
+        print STDERR "\n * Couldn't create $tmp_dir: $@";
+	return undef;
+    }
+    my $cwdir = getcwd;
+    chdir $tmp_dir;
+
+    my $compressed_archive = ( $archive =~ /.+?\.(?:tar\.gz|tgz)$/i );
+    my $arch_obj = Archive::Tar->new( $archive, $compressed_archive );
+    $arch_obj->extract();
+
+    if ( defined $uid && defined $gid ) {
+    #change uid if necessary
+    $uid = getUserId($uid);
+    $gid = getGroupId($gid);
+    find(
+        sub {
+            chown $uid, $gid, $_;
+        },
+        $tmp_dir
+    );
+    }
+    chdir $cwdir;
+
+    return $snap_dir;
+}
 =head2 isReservedDir
 
 =cut

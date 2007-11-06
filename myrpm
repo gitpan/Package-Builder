@@ -13,7 +13,7 @@
 
 use warnings;
 use strict;
-use lib './blib/lib';
+#use lib './lib';
 
 use Text::Template;
 use Archive::Tar;
@@ -31,14 +31,13 @@ use Package::Builder;
 sub printUsage($);
 sub printError($);
 
-my $version_number = "5.02";
+my $version_number = $Package::Builder::VERSION;
 printError("Wrong parameter : -N, -V ,-R at least\n$0 -h for help")
   unless ( $#ARGV >= 0 );
 
 my $topdir          = getParameterFromConfig( "_topdir", "/usr/src/redhat" );
 my $specDir         = $topdir . "/SPECS";
 my $srcDir          = $topdir . "/SOURCES";
-my $archiveRootPath = "/tmp/myrpm";
 
 ######
 # Misc declaration section
@@ -214,12 +213,12 @@ my %lgroups;
 
 #Version
 printError("Wrong version format : XX.YY;ZZ, XX.YY, ...")
-  unless ( $Version =~ /^[0-9][0-9\.]*$/ );
+  unless ( checkVersionFormat $Version );
 print "Checking version : $Version: OK\n" if defined $verbose;
 
 #Release
 printError("Wrong release format : X without dots")
-  unless ( $Release =~ /^[1-9][0-9]*$/ );
+  unless ( checkReleaseFormat $Release );
 print "Checking release : $Release: OK\n" if defined $verbose;
 
 ####
@@ -231,35 +230,7 @@ if ( defined $archive ) {
     # check archive permissions
     printError("Unable to read archive file $archive") unless -r $archive;
 
-    # Create temporary dir
-    $snap_dir = "$archiveRootPath/$$";
-    $tmp_dir  = "$snap_dir/$root_dir";
-    print "\n * Try to create $tmp_dir" if defined $verbose;
-    eval { mkpath($tmp_dir) };
-    if ($@) {
-        print "\n * Couldn't create $tmp_dir: $@";
-    }
-    print "\n* $tmp_dir created." if defined $verbose;
-
-    my $cwdir = getcwd;
-    chdir $tmp_dir;
-
-    my $compressed_archive = ( $archive =~ /.+?\.(?:tar\.gz|tgz)$/i );
-    my $arch_obj = Archive::Tar->new( $archive, $compressed_archive );
-    $arch_obj->extract();
-
-    #change uid if necessary
-    print "\n* $uid($gid) rigths setting." if defined $verbose;
-    $uid = getUserId($uid);
-    $gid = getGroupId($gid);
-    find(
-        sub {
-            print "\n * setting rigths for $_" if defined $verbose;
-            chown $uid, $gid, $_;
-        },
-        $tmp_dir
-    );
-    chdir $cwdir;
+    $snap_dir = extractArchive( $archive, $uid, $gid, $root_dir );
 
     #Priority for archive option
     $root_dir = $snap_dir;
